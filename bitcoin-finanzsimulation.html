@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Finanzsimulation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #log {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bitcoin Finanzsimulation</h1>
+
+    <form id="simulationForm">
+        <label for="bitcoinPrice">Bitcoin-Startpreis (EUR):</label>
+        <input type="number" id="bitcoinPrice" value="95000" step="0.01">
+
+        <label for="bitcoinAmount">Anzahl der Bitcoins:</label>
+        <input type="number" id="bitcoinAmount" value="1" step="0.0001">
+
+        <label for="annualRate">Jährlicher Prozentsatz (%):</label>
+        <input type="number" id="annualRate" value="25" step="0.01">
+
+        <label for="monthlyWithdrawal">Monatliche Entnahme (EUR):</label>
+        <input type="number" id="monthlyWithdrawal" value="1700" step="0.01">
+
+        <label for="simulationYears">Anzahl der Jahre:</label>
+        <input type="number" id="simulationYears" value="30" step="1">
+
+        <label for="startYear">Startjahr:</label>
+        <input type="number" id="startYear" value="2025" step="1">
+
+        <button type="button" id="startSimulation">Start Simulation</button>
+    </form>
+
+    <div id="log"></div>
+
+    <script>
+        document.getElementById("startSimulation").addEventListener("click", function() {
+            const bitcoinPrice = parseFloat(document.getElementById("bitcoinPrice").value);
+            let bitcoinAmount = parseFloat(document.getElementById("bitcoinAmount").value);
+            const annualRate = parseFloat(document.getElementById("annualRate").value) / 100;
+            const monthlyWithdrawal = parseFloat(document.getElementById("monthlyWithdrawal").value);
+            const simulationYears = parseInt(document.getElementById("simulationYears").value, 10);
+            let startYear = parseInt(document.getElementById("startYear").value, 10);
+
+            const monthlyRate = Math.pow(1 + annualRate, 1 / 12) - 1;
+            let currentBitcoinPrice = bitcoinPrice;
+
+            const logElement = document.getElementById("log");
+            logElement.innerHTML = ""; // Clear previous logs
+
+            for (let year = startYear; year < startYear + simulationYears; year++) {
+                for (let month = 1; month <= 12; month++) {
+                    const withdrawalInBitcoin = monthlyWithdrawal / currentBitcoinPrice;
+                    bitcoinAmount -= withdrawalInBitcoin;
+                    currentBitcoinPrice *= (1 + monthlyRate);
+
+                    if (bitcoinAmount <= 0) {
+                        logElement.innerHTML += `${month < 10 ? '0' + month : month}/${year}: Kein Bitcoin-Guthaben mehr.<br>`;
+                        return;
+                    }
+
+                    const bitcoinValue = bitcoinAmount * currentBitcoinPrice;
+                    logElement.innerHTML += `${month < 10 ? '0' + month : month}/${year}: ` +
+                                            `Bitcoinpreis: ${currentBitcoinPrice.toFixed(2)} EUR, ` +
+                                            `Bitcoins: ${bitcoinAmount.toFixed(6)}, ` +
+                                            `Wert: ${bitcoinValue.toFixed(2)} EUR<br>`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
